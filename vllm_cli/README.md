@@ -37,3 +37,18 @@ Run the tool with the following command, providing both an image URL and a text 
 ./vllm_cli --image-url https://example.com/my-cat.jpg --prompt "What color is the cat in the image?"
 ```
 
+## vllm_cli_vk
+
+This is a variant of the `vllm_cli` tool that sources its content from a VK.com community wall.
+
+### Installation
+
+```sh
+dart compile exe bin/vllm_cli_vk.dart -o vllm_cli_vk
+```
+
+### Usage
+
+```sh
+./vllm_cli_vk --vk-token <YOUR_VK_TOKEN> --community-id <YOUR_COMMUNITY_ID> --since-timestamp <UNIX_TIMESTAMP>
+```

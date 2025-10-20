@@ -14,6 +14,9 @@ This document outlines the phased implementation plan for integrating VK.com fun
 - Implemented the new CLI entrypoint (`bin/vllm_cli_vk.dart`) to handle argument parsing and orchestrate the new workflow.
 - Fixed several bugs in the test files and the `VkApiClient` related to string escaping and JSON encoding.
 
+**Phase 4 (2025-10-20):**
+- Updated the `README.md` and `GEMINI.md` files with details about the new VK integration.
+
 ---
 
 ## Phased Implementation
@@ -58,8 +61,8 @@ This document outlines the phased implementation plan for integrating VK.com fun
 
 ### Phase 4: Finalization and Documentation
 
-- [ ] Update the main `README.md` to include a section about the new `vllm_cli_vk` tool, its purpose, and usage examples.
-- [ ] Update the `GEMINI.md` file to include details about the new files (`vk_api_client.dart`, `vllm_cli_vk.dart`) and their roles.
+- [x] Update the main `README.md` to include a section about the new `vllm_cli_vk` tool, its purpose, and usage examples.
+- [x] Update the `GEMINI.md` file to include details about the new files (`vk_api_client.dart`, `vllm_cli_vk.dart`) and their roles.
 - [ ] Ask the user to inspect the final code and the new CLI tool to ensure it meets their requirements.
 
 ---
