@@ -8,6 +8,12 @@ This document outlines the phased implementation plan for integrating VK.com fun
 - Ran existing tests to ensure a stable baseline.
 - Created placeholder files for the new VK integration (`bin/vllm_cli_vk.dart` and `lib/src/vk_api_client.dart`).
 
+**Phase 2 & 3 (2025-10-20):**
+- Implemented the `VkApiClient` to fetch and filter posts from a VK community wall.
+- Created unit tests for the `VkApiClient`.
+- Implemented the new CLI entrypoint (`bin/vllm_cli_vk.dart`) to handle argument parsing and orchestrate the new workflow.
+- Fixed several bugs in the test files and the `VkApiClient` related to string escaping and JSON encoding.
+
 ---
 
 ## Phased Implementation
@@ -20,35 +26,35 @@ This document outlines the phased implementation plan for integrating VK.com fun
 
 ### Phase 2: Implement the VK API Client
 
-- [ ] Add the `http` package dependency if it's not already there (it should be).
-- [ ] Implement the `VkApiClient` class in `lib/src/vk_api_client.dart`.
+- [x] Add the `http` package dependency if it's not already there (it should be).
+- [x] Implement the `VkApiClient` class in `lib/src/vk_api_client.dart`.
     -   The constructor should accept an `http.Client` for testing.
     -   Implement the `getWallPosts(String accessToken, String communityId, int sinceTimestamp)` method.
-- [ ] The `getWallPosts` method will:
+- [x] The `getWallPosts` method will:
     -   Construct the request URL for the `wall.get` VK API method.
     -   Make a GET request.
     -   Parse the JSON response.
     -   Filter the posts based on the `sinceTimestamp`.
     -   Return a list of post objects.
-- [ ] Add unit tests for the `VkApiClient` in a new `test/vk_api_client_test.dart` file.
+- [x] Add unit tests for the `VkApiClient` in a new `test/vk_api_client_test.dart` file.
     -   Mock the `http.Client`.
     -   Test successful response parsing and filtering.
     -   Test API error handling.
 
 ### Phase 3: Implement the VK CLI Entrypoint
 
-- [ ] In `bin/vllm_cli_vk.dart`, implement the argument parsing using the `args` package.
+- [x] In `bin/vllm_cli_vk.dart`, implement the argument parsing using the `args` package.
     -   `--vk-token` (required)
     -   `--community-id` (required)
     -   `--since-timestamp` (required, should be parsed as an integer).
-- [ ] Add logic to validate the presence of all required arguments.
-- [ ] Instantiate `VkApiClient` and `VllmClient`.
-- [ ] Call `vkApiClient.getWallPosts` with the parsed arguments.
-- [ ] Loop through the returned posts:
+- [x] Add logic to validate the presence of all required arguments.
+- [x] Instantiate `VkApiClient` and `VllmClient`.
+- [x] Call `vkApiClient.getWallPosts` with the parsed arguments.
+- [x] Loop through the returned posts:
     -   Extract `text` and the largest photo URL from the `attachments`.
     -   If both are present, call `vllmClient.generate()`.
     -   Print the results in a readable format.
-- [ ] Add `try-catch` blocks to handle errors gracefully.
+- [x] Add `try-catch` blocks to handle errors gracefully.
 
 ### Phase 4: Finalization and Documentation
 
