@@ -16,6 +16,12 @@ This document outlines the phased implementation plan for the `vllm_cli` package
 - Implemented the CLI entrypoint in `bin/vllm_cli.dart` to parse arguments and orchestrate the client call.
 - Ran code quality tools (`dart fix`, `dart analyze`, `dart format`).
 
+**Phase 4 (2025-10-20):**
+- Added `test`, `mockito`, and `build_runner` dev dependencies.
+- Created unit tests for the `VllmClient`.
+- Refactored `VllmClient` to allow for dependency injection of the `http.Client`.
+- Manually tested the CLI and fixed a bug related to the model name.
+
 ---
 
 ## Phased Implementation
@@ -57,11 +63,11 @@ This document outlines the phased implementation plan for the `vllm_cli` package
 
 ### Phase 4: Testing and Refinement
 
-- [ ] Create unit tests for the `VllmClient` in the `test/` directory. Use a mocking library like `mockito` to mock the `http.Client` and test:
+- [x] Create unit tests for the `VllmClient` in the `test/` directory. Use a mocking library like `mockito` to mock the `http.Client` and test:
     - Successful response parsing.
     - HTTP error handling.
     - Network error handling.
-- [ ] Manually test the CLI executable against the live vLLM service to ensure end-to-end functionality.
+- [x] Manually test the CLI executable against the live vLLM service to ensure end-to-end functionality.
 
 ### Phase 5: Finalization and Documentation
 
