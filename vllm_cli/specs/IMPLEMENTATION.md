@@ -4,7 +4,17 @@ This document outlines the phased implementation plan for the `vllm_cli` package
 
 ## Journal
 
-*This section will be updated after each phase with a log of actions, learnings, and any deviations from the plan.*
+**Phase 1 (2025-10-20):**
+- Initialized the Dart project.
+- Added `args` and `http` dependencies.
+- Updated `pubspec.yaml`, `README.md`, and `CHANGELOG.md`.
+- A small hiccup occurred where `create_project` wouldn't run in a pre-existing directory. The `specs` directory was temporarily moved, the project directory was deleted and recreated by the tool, and then the `specs` directory was moved back.
+- The initial project structure has been committed.
+
+**Phase 2 & 3 (2025-10-20):**
+- Implemented the `VllmClient` to handle API communication.
+- Implemented the CLI entrypoint in `bin/vllm_cli.dart` to parse arguments and orchestrate the client call.
+- Ran code quality tools (`dart fix`, `dart analyze`, `dart format`).
 
 ---
 
@@ -12,38 +22,38 @@ This document outlines the phased implementation plan for the `vllm_cli` package
 
 ### Phase 1: Project Scaffolding and Initialization
 
-- [ ] Create a Dart console application in the current directory (`.`).
-- [ ] Add the `args` and `http` packages as dependencies.
-- [ ] Update the `description` in `pubspec.yaml` to a more descriptive one and set the version to `0.1.0`.
-- [ ] Delete the boilerplate `lib/vllm_cli.dart` and `test/` directory.
-- [ ] Create a placeholder `README.md` with a brief description.
-- [ ] Create a `CHANGELOG.md` with an initial entry for version `0.1.0`.
-- [ ] Commit the initial project structure to the `feature/vllm-cli` branch.
+- [x] Create a Dart console application in the current directory (`.`).
+- [x] Add the `args` and `http` packages as dependencies.
+- [x] Update the `description` in `pubspec.yaml` to a more descriptive one and set the version to `0.1.0`.
+- [x] Delete the boilerplate `lib/vllm_cli.dart` and `test/` directory.
+- [x] Create a placeholder `README.md` with a brief description.
+- [x] Create a `CHANGELOG.md` with an initial entry for version `0.1.0`.
+- [x] Commit the initial project structure to the `feature/vllm-cli` branch.
 
 ### Phase 2: Implement the VLLM API Client
 
-- [ ] Create a new file `lib/src/vllm_client.dart`.
-- [ ] Implement the `VllmClient` class.
+- [x] Create a new file `lib/src/vllm_client.dart`.
+- [x] Implement the `VllmClient` class.
     - It should have a constructor that accepts the API endpoint URL.
     - It should have a public method `generate(String imageUrl, String prompt)`.
-- [ ] The `generate` method will handle the logic for:
+- [x] The `generate` method will handle the logic for:
     - Creating the JSON request body.
     - Making the POST request using the `http` package.
     - Handling successful responses and extracting the message content.
     - Handling error responses (e.g., non-200 status codes).
-- [ ] Add basic error handling for network exceptions.
+- [x] Add basic error handling for network exceptions.
 
 ### Phase 3: Implement the CLI Entrypoint
 
-- [ ] Create the main entrypoint file `bin/vllm_cli.dart`.
-- [ ] Use the `args` package to set up an `ArgParser` that requires two options:
+- [x] Create the main entrypoint file `bin/vllm_cli.dart`.
+- [x] Use the `args` package to set up an `ArgParser` that requires two options:
     - `--image-url`: The URL of the image to analyze.
     - `--prompt`: The text prompt to send to the model.
-- [ ] Parse the command-line arguments.
-- [ ] If arguments are invalid or missing, print the usage information and exit.
-- [ ] Instantiate `VllmClient`.
-- [ ] Call the `generate` method and print the result to the console.
-- [ ] Wrap the call in a `try/catch` block to gracefully handle and report any errors from the client.
+- [x] Parse the command-line arguments.
+- [x] If arguments are invalid or missing, print the usage information and exit.
+- [x] Instantiate `VllmClient`.
+- [x] Call the `generate` method and print the result to the console.
+- [x] Wrap the call in a `try/catch` block to gracefully handle and report any errors from the client.
 
 ### Phase 4: Testing and Refinement
 
