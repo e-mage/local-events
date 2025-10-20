@@ -1,3 +1,39 @@
 # vllm_cli
 
-A command-line utility to interact with a vLLM service.
+A command-line utility, written in Dart, to interact with a vLLM (Vision Language Model) service that is compatible with the OpenAI API.
+
+## Description
+
+This tool allows you to send a text prompt and an image URL to a running vLLM instance and receive a textual response. It is designed for quick and easy interaction with vision-language models from the command line.
+
+## Installation
+
+1.  Ensure you have the [Dart SDK](https://dart.dev/get-dart) installed.
+2.  Clone this repository.
+3.  Navigate to the project directory:
+    ```sh
+    cd vllm_cli
+    ```
+4.  Build the executable:
+    ```sh
+    dart compile exe bin/vllm_cli.dart -o vllm_cli
+    ```
+5.  (Optional) Move the executable to a directory in your system's PATH to make it accessible from anywhere:
+    ```sh
+    mv vllm_cli /usr/local/bin/
+    ```
+
+## Usage
+
+Run the tool with the following command, providing both an image URL and a text prompt:
+
+```sh
+./vllm_cli --image-url <URL_to_your_image> --prompt "Your text prompt here"
+```
+
+### Example
+
+```sh
+./vllm_cli --image-url https://example.com/my-cat.jpg --prompt "What color is the cat in the image?"
+```
+

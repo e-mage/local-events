@@ -22,6 +22,10 @@ This document outlines the phased implementation plan for the `vllm_cli` package
 - Refactored `VllmClient` to allow for dependency injection of the `http.Client`.
 - Manually tested the CLI and fixed a bug related to the model name.
 
+**Phase 5 (2025-10-20):**
+- Created a comprehensive `README.md`.
+- Created a `GEMINI.md` to document the project structure and implementation details.
+
 ---
 
 ## Phased Implementation
@@ -71,11 +75,11 @@ This document outlines the phased implementation plan for the `vllm_cli` package
 
 ### Phase 5: Finalization and Documentation
 
-- [ ] Create a comprehensive `README.md` file that includes:
+- [x] Create a comprehensive `README.md` file that includes:
     - A clear description of what the tool does.
     - Installation instructions (how to build the executable).
     - Detailed usage examples.
-- [ ] Create a `GEMINI.md` file in the project directory that describes the app, its purpose, and implementation details of the application and the layout of the files.
+- [x] Create a `GEMINI.md` file in the project directory that describes the app, its purpose, and implementation details of the application and the layout of the files.
 - [ ] Ask the user to inspect the app and the code and say if they are satisfied with it, or if any modifications are needed.
 
 ---
