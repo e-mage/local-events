@@ -65,10 +65,12 @@ This document outlines the phased implementation plan for integrating a SQLite d
     4.  Update the `since_timestamp` for each group after it has been processed.
 - [x] Add robust error handling and print statements to log the script's activity.
 
-### Phase 4: Finalization and Documentation
+**Phase 4 (Finalization and Documentation) (2025-10-20):**
+- Updated `README.md` with instructions for `init_db.dart` and `batch_process.dart`.
+- Updated `GEMINI.md` to reflect the new database components and scripts.
 
-- [ ] Update the main `README.md` to include instructions for the two new scripts (`init_db.dart` and `batch_process.dart`).
-- [ ] Update the `GEMINI.md` file to reflect the new database components and scripts.
+- [x] Update the main `README.md` to include instructions for the two new scripts (`init_db.dart` and `batch_process.dart`).
+- [x] Update the `GEMINI.md` file to reflect the new database components and scripts.
 - [ ] Ask the user to inspect the final code and the new scripts to ensure they meet all requirements.
 
 ---

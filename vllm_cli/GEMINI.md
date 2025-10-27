@@ -18,11 +18,17 @@ The code is structured into four main components:
 
 1.  **`VllmClient` (`lib/src/vllm_client.dart`)**: This class encapsulates all the logic for communicating with the vLLM API.
 
-2.  **`VkApiClient` (`lib/src/vk_api_client.dart`)**: This class handles communication with the VK.com API to fetch wall posts.
+2.  **`VkApiClient` (`lib/src/vk_api_client.dart`)**: This class handles communication with the VK.com API to fetch wall posts and group metadata.
 
-3.  **CLI Entrypoint (`bin/vllm_cli.dart`)**: The main executable for processing direct image URLs.
+3.  **`DbClient` (`lib/src/db_client.dart`)**: This class manages the SQLite database for storing VK community information.
 
-4.  **VK CLI Entrypoint (`bin/vllm_cli_vk.dart`)**: The executable for sourcing content from a VK community wall.
+4.  **CLI Entrypoint (`bin/vllm_cli.dart`)**: The main executable for processing direct image URLs.
+
+5.  **VK CLI Entrypoint (`bin/vllm_cli_vk.dart`)**: The executable for sourcing content from a VK community wall.
+
+6.  **Database Initialization Script (`bin/init_db.dart`)**: A script to populate the database with community information.
+
+7.  **Batch Processing Script (`bin/batch_process.dart`)**: A script to periodically process posts from all communities in the database.
 
 ## File Layout
 
@@ -34,9 +40,12 @@ lib/
   src/
     vllm_client.dart      # The API client for the vLLM service.
     vk_api_client.dart    # The API client for the VK.com service.
+    db_client.dart        # The SQLite database client.
 bin/
   vllm_cli.dart         # The main executable and CLI entrypoint.
   vllm_cli_vk.dart      # The entrypoint for the VK integration.
+  init_db.dart          # The database initialization script.
+  batch_process.dart    # The batch processing script.
 pubspec.lock
 pubspec.yaml
 README.md
@@ -47,4 +56,5 @@ specs/
 test/
   vllm_client_test.dart # Unit tests for the VllmClient.
   vk_api_client_test.dart # Unit tests for the VkApiClient.
+  db_client_test.dart   # Unit tests for the DbClient.
 ```

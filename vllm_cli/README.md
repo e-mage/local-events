@@ -52,3 +52,25 @@ dart compile exe bin/vllm_cli_vk.dart -o vllm_cli_vk
 ```sh
 ./vllm_cli_vk --vk-token <YOUR_VK_TOKEN> --community-id <YOUR_COMMUNITY_ID> --since-timestamp <UNIX_TIMESTAMP>
 ```
+
+### init_db.dart
+
+This script initializes the SQLite database with VK community information.
+
+#### Usage
+
+```sh
+dart run bin/init_db.dart --vk-token <YOUR_VK_TOKEN> --file <PATH_TO_COMMUNITY_IDS_FILE>
+```
+
+Where `<PATH_TO_COMMUNITY_IDS_FILE>` is a text file with one community ID per line.
+
+### batch_process.dart
+
+This script iterates through the communities in the database, fetches new posts, and processes them with the VLLM.
+
+#### Usage
+
+```sh
+dart run bin/batch_process.dart --vk-token <YOUR_VK_TOKEN>
+```
