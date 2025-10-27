@@ -1,110 +1,143 @@
-# Modification Design Document: VK Integration
+# Modification Design Document: Database Integration
 
 ## Overview
 
-This document outlines the design for modifying the `vllm_cli` tool to support fetching content from a VK.com community wall. A new, separate command-line script will be created (`bin/vllm_cli_vk.dart`) that takes a VK community ID, an access token, and a timestamp, fetches relevant posts, and then uses the existing `VllmClient` to process them.
+This document outlines the design for a significant modification to the `vllm_cli` tool. The goal is to add a persistent database using SQLite to store a list of VK communities. This will enable new batch processing capabilities. Two new scripts will be created: one to initialize the database from a text file of community IDs, and another to periodically fetch new posts from all communities in the database and process them with the vLLM.
 
 ## Problem Analysis
 
-The user wants to extend the functionality of the `vllm_cli` tool to use content from VK.com as a data source. The goal is to automate the process of feeding posts from a specific community into the vision-language model.
+The current workflow requires manually specifying a single community ID. The user wants to automate this for multiple communities. This introduces several new requirements:
 
-This requires a new workflow:
-1.  **Data Ingestion:** Fetch posts from a VK community wall using the VK API.
-2.  **Filtering:**
-    -   Filter posts to include only those created by the community owner.
-    -   Filter posts to include only those newer than a given timestamp.
-3.  **Data Extraction:** For each post, extract the text and the URL of any attached images.
-4.  **Processing:** For each post that contains both text and an image, use the existing `VllmClient` to send the data to the vLLM service.
-5.  **Output:** Print the results to the console.
-
-### New Command-Line Parameters
-
-The new script will require the following arguments:
--   `--vk-token`: The VK API access token.
--   `--community-id`: The ID of the VK community (a negative integer).
--   `--since-timestamp`: A Unix timestamp to filter posts. Only posts newer than this will be processed.
+1.  **Persistence:** A mechanism is needed to store a list of target VK communities.
+2.  **State Management:** For each community, we need to track the timestamp of the last processed post to avoid reprocessing old content. The `since_timestamp` field will serve this purpose.
+3.  **Initialization:** A simple way to populate the database is required. A script that reads a list of community IDs from a text file and fetches their metadata (name, description) from the VK API is the most user-friendly approach.
+4.  **Batch Processing:** A new master script is needed to iterate through all communities in the database, fetch new content for each, process it with the vLLM, and update the `since_timestamp` for that community.
 
 ## Alternatives Considered
 
-### 1. Modifying the Existing Script with Subcommands
+### 1. Using a Plain Text or JSON File
 
--   **Description:** Instead of a new script, the existing `bin/vllm_cli.dart` could be modified to use subcommands (e.g., `vllm_cli url ...` and `vllm_cli vk ...`).
--   **Pros:** Keeps all functionality within a single executable.
--   **Cons:** Adds complexity to the argument parsing logic. The two use cases (direct URL vs. VK scraping) are distinct enough that separating them into two scripts is cleaner and more maintainable for this initial implementation.
--   **Decision:** The user agreed to create a separate script, which is a simpler and more direct approach for this modification.
+-   **Description:** The list of communities and their `since_timestamp` could be stored in a structured text file like JSON or CSV.
+-   **Pros:** Avoids adding a new database dependency.
+-   **Cons:** This approach is not robust. Managing state by reading and writing to a text file is prone to race conditions and data corruption, especially if the script is interrupted. It is also less scalable and more complex to query or update individual records.
+-   **Decision:** Using SQLite is a much more reliable and standard solution for managing structured, stateful data, even for a small-scale application like this. The `sqflite` package provides a mature and well-supported interface for this.
 
 ## Detailed Design
 
-The modification will be implemented by adding two new main components: a VK API client and a new CLI entrypoint.
+The modification will be centered around a new database layer, and two new executable scripts.
 
-### 1. VK API Client (`lib/src/vk_api_client.dart`)
+### 1. Database Layer (`lib/src/db_client.dart`)
 
--   A new class, `VkApiClient`, will be created to handle all communication with the VK API.
--   **Constructor:** It will accept an `http.Client` for dependency injection and testing.
--   **`getWallPosts(...)` method:**
-    -   This asynchronous method will take the `accessToken`, `communityId`, and `sinceTimestamp` as arguments.
-    -   It will return a `Future<List<Map<String, dynamic>>>`.
-    -   It will construct the URL for the `wall.get` method of the VK API.
-        -   `https://api.vk.com/method/wall.get`
-        -   Parameters:
-            -   `owner_id`: The `communityId`.
-            -   `access_token`: The `accessToken`.
-            -   `v`: A recent API version (e.g., `5.199`).
-            -   `filter`: Hardcoded to `owner`.
-            -   `count`: Set to a reasonable number (e.g., 100) to fetch a batch of recent posts.
-    -   It will make a GET request using the injected `http.Client`.
-    -   It will handle non-200 responses by throwing an exception.
-    -   It will parse the JSON response and extract the `items` array from `response['response']['items']`.
-    -   It will filter these items in-memory, keeping only posts where the `date` field is greater than `sinceTimestamp`.
-    -   It will return the filtered list of post objects.
+-   A new `DbClient` class will be created to abstract all database operations.
+-   It will use the `sqflite` package.
+-   The database file will be named `vllm_cli.db` and stored in the project root.
+-   **`initDB()` method:**
+    -   Opens the database.
+    -   Executes a `CREATE TABLE IF NOT EXISTS` statement for the `groups` table.
+    -   The table schema will be:
+        -   `id` INTEGER PRIMARY KEY AUTOINCREMENT
+        -   `community_id` TEXT NOT NULL UNIQUE
+        -   `name` TEXT NOT NULL
+        -   `about` TEXT
+        -   `since_timestamp` INTEGER NOT NULL
+-   **`initializeGroup(...)` method:** Inserts a new group into the table. It will first check if a group with the given `community_id` already exists to prevent duplicates.
+-   **`getAllGroups()` method:** Returns a `Future<List<Map<String, dynamic>>>` of all records in the `groups` table.
+-   **`updateGroupTimestamp(int id, int newTimestamp)` method:** Updates the `since_timestamp` for a specific group by its primary key `id`.
 
-### 2. New CLI Entrypoint (`bin/vllm_cli_vk.dart`)
+### 2. VK API Client (`lib/src/vk_api_client.dart`)
 
--   This new script will orchestrate the entire process.
--   It will use `package:args` to parse the new command-line arguments (`--vk-token`, `--community-id`, `--since-timestamp`).
--   The `main` function will:
-    1.  Validate that all required arguments are present.
-    2.  Instantiate the `VkApiClient` and the `VllmClient`.
-    3.  Call `vkApiClient.getWallPosts(...)` to fetch and filter the posts.
-    4.  Iterate through the returned posts.
-    5.  For each post:
-        -   Extract the `text`.
-        -   Check for attachments. Find the first attachment of type `photo`.
-        -   If a photo is found, extract the URL of the largest available image size from the `sizes` array.
-        -   If both text and an image URL are found, call `vllmClient.generate(imageUrl, text)`.
-        -   Print the original post text, the image URL, and the response from the vLLM.
-    6.  Include `try-catch` blocks for robust error handling.
+-   The existing `VkApiClient` will be enhanced with a new method.
+-   **`getGroupsById(List<String> groupIds, String accessToken)` method:**
+    -   This method will call the `groups.getById` endpoint of the VK API.
+    -   It will take a list of community IDs and the access token.
+    -   It will request the `description` field to get the `about` text.
+    -   It will return a list of group objects containing their `id`, `name`, and `description`.
 
-### 3. Mermaid Diagram
+### 3. Initialization Script (`bin/init_db.dart`)
 
+-   A new command-line script.
+-   **Arguments:**
+    -   `--vk-token`: Required VK API access token.
+    -   `--file`: Required path to a text file containing community IDs (one per line).
+-   **Logic:**
+    1.  Parse arguments.
+    2.  Instantiate `DbClient` and call `initDB()`.
+    3.  Instantiate `VkApiClient`.
+    4.  Read the community IDs from the specified file.
+    5.  Call `vkApiClient.getGroupsById` to fetch community metadata.
+    6.  For each community returned by the API:
+        -   Calculate a `since_timestamp` for two weeks ago.
+        -   Call `dbClient.initializeGroup` to insert the new record.
+
+### 4. Batch Processing Script (`bin/batch_process.dart`)
+
+-   A new command-line script.
+-   **Argument:**
+    -   `--vk-token`: Required VK API access token.
+-   **Logic:**
+    1.  Instantiate `DbClient`, `VkApiClient`, and `VllmClient`.
+    2.  Call `dbClient.getAllGroups()`.
+    3.  Get the current Unix timestamp before starting the loop (`newTimestamp`).
+    4.  Iterate through each `group` from the database.
+    5.  Call `vkApiClient.getWallPosts` using the group's `community_id` and `since_timestamp`.
+    6.  Process the returned posts using the same logic as in `vllm_cli_vk.dart` (extract text and image, call `vllmClient.generate`).
+    7.  After successfully processing all posts for a group, call `dbClient.updateGroupTimestamp` with the group's `id` and the `newTimestamp` captured at the start.
+
+### 5. Mermaid Diagrams
+
+**Initialization Flow (`init_db.dart`)**
 ```mermaid
 sequenceDiagram
     participant User
-    participant VK_CLI (bin/vllm_cli_vk.dart)
-    participant VkApiClient (lib/src/vk_api_client.dart)
+    participant InitScript (bin/init_db.dart)
+    participant FileSystem
+    participant VkApiClient
     participant VK_API
-    participant VllmClient (lib/src/vllm_client.dart)
-    participant vLLM_API
+    participant DbClient
 
-    User->>+VK_CLI: dart run vllm_cli_vk --vk-token ... --community-id ...
-    VK_CLI->>+VkApiClient: getWallPosts(...)
-    VkApiClient->>+VK_API: GET /method/wall.get?owner_id=...
-    VK_API-->>-VkApiClient: JSON Response (list of posts)
-    VkApiClient-->>-VK_CLI: Returns filtered list of posts
-
-    loop For each post
-        VK_CLI->>+VllmClient: generate(imageUrl, text)
-        VllmClient->>+vLLM_API: POST /v1/chat/completions
-        vLLM_API-->>-VllmClient: JSON Response
-        VllmClient-->>-VK_CLI: Returns generated text
-        VK_CLI-->>User: prints all results
+    User->>+InitScript: dart run init_db.dart --file ... --vk-token ...
+    InitScript->>+FileSystem: Read community_ids.txt
+    FileSystem-->>-InitScript: Returns list of IDs
+    InitScript->>+VkApiClient: getGroupsById(ids, token)
+    VkApiClient->>+VK_API: GET /method/groups.getById
+    VK_API-->>-VkApiClient: Returns group metadata
+    VkApiClient-->>-InitScript: Returns list of group objects
+    loop For each group
+        InitScript->>+DbClient: initializeGroup(group)
     end
+    DbClient-->>-InitScript: Confirmation
+    InitScript-->>-User: Prints status
+```
+
+**Batch Processing Flow (`batch_process.dart`)**
+```mermaid
+sequenceDiagram
+    participant User
+    participant BatchScript (bin/batch_process.dart)
+    participant DbClient
+    participant VkApiClient
+    participant VllmClient
+
+    User->>+BatchScript: dart run batch_process.dart --vk-token ...
+    BatchScript->>+DbClient: getAllGroups()
+    DbClient-->>-BatchScript: Returns list of groups
+    loop For each group
+        BatchScript->>+VkApiClient: getWallPosts(group.community_id, group.since_timestamp)
+        VkApiClient-->>-BatchScript: Returns list of new posts
+        loop For each post
+            BatchScript->>+VllmClient: generate(post.image, prompt)
+            VllmClient-->>-BatchScript: Returns vLLM response
+        end
+        BatchScript->>+DbClient: updateGroupTimestamp(group.id, now)
+    end
+    BatchScript-->>-User: Prints all results
 ```
 
 ## Summary
 
-The design introduces a new, self-contained workflow for processing VK.com content while reusing the existing `VllmClient`. A new `VkApiClient` will encapsulate the logic for interacting with the VK API, and a new entrypoint script `vllm_cli_vk.dart` will handle the orchestration. This approach cleanly separates the new functionality from the existing code, promoting maintainability and making the system easy to test.
+This modification introduces a robust, database-backed system for batch processing. It cleanly separates concerns by creating a dedicated database client (`DbClient`) and two new, single-purpose scripts (`init_db.dart` and `batch_process.dart`). The existing `VkApiClient` is extended to support fetching group metadata. This design is scalable and maintains a clear project structure.
 
 ## Research URLs
 
--   **VK API `wall.get` method:** [https://dev.vk.com/method/wall.get](https://dev.vk.com/method/wall.get)
+-   **sqflite package:** [https://pub.dev/packages/sqflite](https://pub.dev/packages/sqflite)
+-   **VK API `groups.getById`:** [https://dev.vk.com/method/groups.getById](https://dev.vk.com/method/groups.getById)

@@ -1,6 +1,6 @@
-# Modification Implementation Plan: VK Integration
+# Modification Implementation Plan: Database Integration
 
-This document outlines the phased implementation plan for integrating VK.com functionality into the `vllm_cli` tool.
+This document outlines the phased implementation plan for integrating a SQLite database and batch processing capabilities into the `vllm_cli` tool.
 
 ## Journal
 
@@ -14,56 +14,60 @@ This document outlines the phased implementation plan for integrating VK.com fun
 - Implemented the new CLI entrypoint (`bin/vllm_cli_vk.dart`) to handle argument parsing and orchestrate the new workflow.
 - Fixed several bugs in the test files and the `VkApiClient` related to string escaping and JSON encoding.
 
-**Phase 4 (2025-10-20):**
-- Updated the `README.md` and `GEMINI.md` files with details about the new VK integration.
+**Phase 1 (Database Integration) (2025-10-20):**
+- Added `sqlite3` and `path` dependencies.
+- Implemented `DbClient` for SQLite operations.
+- Added `getGroupsById` method to `VkApiClient`.
+- Implemented unit tests for `DbClient` and `VkApiClient.getGroupsById`.
+- Fixed issues with `sqlite3` library loading and test setup.
+
+**Phase 2 (Database Initialization Script) (2025-10-20):**
+- Created `bin/init_db.dart` script.
+- Implemented argument parsing for `--vk-token` and `--file`.
+- Added logic to read community IDs from a file, fetch group data from VK API, and populate the database.
 
 ---
 
 ## Phased Implementation
 
-### Phase 1: Initial Setup and Test Verification
+### Phase 1: Setup and Database Client
 
-- [x] Run all existing tests to ensure the project is in a good state before starting modifications.
-- [x] Create a new entrypoint file: `bin/vllm_cli_vk.dart` with a basic "Hello World" main function.
-- [x] Create the `lib/src/vk_api_client.dart` file with an empty `VkApiClient` class.
+- [x] Run all existing tests to ensure the project is in a good state.
+- [x] Add the `sqflite` and `path` packages to `pubspec.yaml`.
+- [x] Create the `lib/src/db_client.dart` file.
+- [x] Implement the `DbClient` class with the following methods:
+    -   `initDB()`: To create the database file and the `groups` table.
+    -   `initializeGroup(String communityId, String name, String about, int sinceTimestamp)`: To insert a new group, checking for duplicates.
+    -   `getAllGroups()`: To fetch all groups.
+    -   `updateGroupTimestamp(int id, int newTimestamp)`: To update a group's timestamp.
+- [x] Add a new method `getGroupsById(List<String> groupIds, String accessToken)` to the `VkApiClient` in `lib/src/vk_api_client.dart`.
+- [x] Add unit tests for the new `DbClient` methods and the new `VkApiClient.getGroupsById` method.
 
-### Phase 2: Implement the VK API Client
+### Phase 2: Implement the Database Initialization Script
 
-- [x] Add the `http` package dependency if it's not already there (it should be).
-- [x] Implement the `VkApiClient` class in `lib/src/vk_api_client.dart`.
-    -   The constructor should accept an `http.Client` for testing.
-    -   Implement the `getWallPosts(String accessToken, String communityId, int sinceTimestamp)` method.
-- [x] The `getWallPosts` method will:
-    -   Construct the request URL for the `wall.get` VK API method.
-    -   Make a GET request.
-    -   Parse the JSON response.
-    -   Filter the posts based on the `sinceTimestamp`.
-    -   Return a list of post objects.
-- [x] Add unit tests for the `VkApiClient` in a new `test/vk_api_client_test.dart` file.
-    -   Mock the `http.Client`.
-    -   Test successful response parsing and filtering.
-    -   Test API error handling.
+- [x] Create the `bin/init_db.dart` script.
+- [x] Implement argument parsing for `--vk-token` and `--file`.
+- [x] Add logic to read community IDs from the specified file.
+- [x] Use `VkApiClient.getGroupsById` to fetch community data.
+- [x] Use `DbClient.initializeGroup` to populate the database.
+- [x] Add user-friendly print statements to show progress and success/error messages.
 
-### Phase 3: Implement the VK CLI Entrypoint
+### Phase 3: Implement the Batch Processing Script
 
-- [x] In `bin/vllm_cli_vk.dart`, implement the argument parsing using the `args` package.
-    -   `--vk-token` (required)
-    -   `--community-id` (required)
-    -   `--since-timestamp` (required, should be parsed as an integer).
-- [x] Add logic to validate the presence of all required arguments.
-- [x] Instantiate `VkApiClient` and `VllmClient`.
-- [x] Call `vkApiClient.getWallPosts` with the parsed arguments.
-- [x] Loop through the returned posts:
-    -   Extract `text` and the largest photo URL from the `attachments`.
-    -   If both are present, call `vllmClient.generate()`.
-    -   Print the results in a readable format.
-- [x] Add `try-catch` blocks to handle errors gracefully.
+- [ ] Create the `bin/batch_process.dart` script.
+- [ ] Implement argument parsing for `--vk-token`.
+- [ ] Add the main logic:
+    1.  Instantiate all clients (`DbClient`, `VkApiClient`, `VllmClient`).
+    2.  Fetch all groups from the database.
+    3.  Loop through each group, fetch new posts, and process them with the vLLM.
+    4.  Update the `since_timestamp` for each group after it has been processed.
+- [ ] Add robust error handling and print statements to log the script's activity.
 
 ### Phase 4: Finalization and Documentation
 
-- [x] Update the main `README.md` to include a section about the new `vllm_cli_vk` tool, its purpose, and usage examples.
-- [x] Update the `GEMINI.md` file to include details about the new files (`vk_api_client.dart`, `vllm_cli_vk.dart`) and their roles.
-- [ ] Ask the user to inspect the final code and the new CLI tool to ensure it meets their requirements.
+- [ ] Update the main `README.md` to include instructions for the two new scripts (`init_db.dart` and `batch_process.dart`).
+- [ ] Update the `GEMINI.md` file to reflect the new database components and scripts.
+- [ ] Ask the user to inspect the final code and the new scripts to ensure they meet all requirements.
 
 ---
 

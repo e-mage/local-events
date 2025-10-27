@@ -82,5 +82,26 @@ void main() {
         throwsA(isA<Exception>()),
       );
     });
+
+    test('getGroupsById returns groups on successful response', () async {
+      final client = MockClient();
+      final vkApiClient = VkApiClient(client: client);
+
+      final responseJson = {
+        'response': [
+          {'id': 1, 'name': 'Group 1', 'description': 'Desc 1'},
+          {'id': 2, 'name': 'Group 2', 'description': 'Desc 2'},
+        ],
+      };
+
+      when(
+        client.get(any),
+      ).thenAnswer((_) async => http.Response(json.encode(responseJson), 200));
+
+      final groups = await vkApiClient.getGroupsById(['-1', '-2'], 'token');
+
+      expect(groups.length, 2);
+      expect(groups[0]['name'], 'Group 1');
+    });
   });
 }

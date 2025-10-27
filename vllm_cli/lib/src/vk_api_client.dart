@@ -38,4 +38,29 @@ class VkApiClient {
         .cast<Map<String, dynamic>>()
         .toList();
   }
+
+  Future<List<Map<String, dynamic>>> getGroupsById(
+    List<String> groupIds,
+    String accessToken,
+  ) async {
+    final uri = Uri.https('api.vk.com', '/method/groups.getById', {
+      'group_ids': groupIds.join(','),
+      'access_token': accessToken,
+      'v': '5.199',
+      'fields': 'description',
+    });
+
+    final response = await _client.get(uri);
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to load groups from VK: \${response.body}');
+    }
+
+    final data = json.decode(response.body);
+    if (data['error'] != null) {
+      throw Exception('VK API Error: \${data["error"]["error_msg"]}');
+    }
+
+    return (data['response'] as List).cast<Map<String, dynamic>>();
+  }
 }
