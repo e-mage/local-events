@@ -52,16 +52,18 @@ This document outlines the phased implementation plan for integrating a SQLite d
 - [x] Use `DbClient.initializeGroup` to populate the database.
 - [x] Add user-friendly print statements to show progress and success/error messages.
 
-### Phase 3: Implement the Batch Processing Script
+**Phase 3 (Batch Processing Script) (2025-10-20):**
+- Created the `bin/batch_process.dart` script to iterate through the database, fetch new posts, and process them.
+- Implemented the full batch processing logic, including timestamp updates and error handling.
 
-- [ ] Create the `bin/batch_process.dart` script.
-- [ ] Implement argument parsing for `--vk-token`.
-- [ ] Add the main logic:
+- [x] Create the `bin/batch_process.dart` script.
+- [x] Implement argument parsing for `--vk-token`.
+- [x] Add the main logic:
     1.  Instantiate all clients (`DbClient`, `VkApiClient`, `VllmClient`).
     2.  Fetch all groups from the database.
     3.  Loop through each group, fetch new posts, and process them with the vLLM.
     4.  Update the `since_timestamp` for each group after it has been processed.
-- [ ] Add robust error handling and print statements to log the script's activity.
+- [x] Add robust error handling and print statements to log the script's activity.
 
 ### Phase 4: Finalization and Documentation
 
