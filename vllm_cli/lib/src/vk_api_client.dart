@@ -61,6 +61,14 @@ class VkApiClient {
       throw Exception('VK API Error: \${data["error"]["error_msg"]}');
     }
 
-    return (data['response'] as List).cast<Map<String, dynamic>>();
+    final dynamic responseData = data['response'];
+
+    if (responseData is List) {
+      return responseData.cast<Map<String, dynamic>>();
+    } else if (responseData is Map<String, dynamic>) {
+      return [responseData];
+    } else {
+      throw Exception('Unexpected VK API response format for groups.getById');
+    }
   }
 }
