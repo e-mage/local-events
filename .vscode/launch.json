@@ -1,0 +1,38 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "vllm_cli",
+            "cwd": "vllm_cli",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "init_db.dart",
+            "type": "dart",
+            "request": "launch",
+            "program": "bin/init_db.dart",
+            "args": [
+                "--vk-token",
+                "<YOUR_VK_TOKEN>",
+                "--file",
+                "community-ids.txt"
+            ],
+            "cwd": "${workspaceFolder}/vllm_cli"
+        },
+        {
+            "name": "batch_process.dart",
+            "type": "dart",
+            "request": "launch",
+            "program": "bin/batch_process.dart",
+            "args": [
+                "--vk-token",
+                "<YOUR_VK_TOKEN>"
+            ],
+            "cwd": "${workspaceFolder}/vllm_cli"
+        }
+    ]
+}

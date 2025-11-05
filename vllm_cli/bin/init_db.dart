@@ -31,29 +31,33 @@ void main(List<String> arguments) async {
     }
 
     final communityIds = await file.readAsLines();
+    //print(communityIds);
 
     final vkApiClient = VkApiClient();
     final dbClient = DbClient();
 
     print('Fetching group info from VK...');
     final groupsData = await vkApiClient.getGroupsById(communityIds, vkToken);
+    //print(groupsData);
 
     final twoWeeksAgo = DateTime.now().subtract(const Duration(days: 14));
     final sinceTimestamp = twoWeeksAgo.millisecondsSinceEpoch ~/ 1000;
 
     print('Initializing database...');
-    for (final groupData in groupsData) {
+    for (final groupData in groupsData[0]['groups']) {
       final communityId = groupData['id'].toString();
-      final name = groupData['name'] as String;
+      final screenName = groupData['screen_name'].toString();
+      final name = groupData['name'] as String? ?? '';
       final about = groupData['description'] as String? ?? '';
 
       dbClient.initializeGroup(
         '-$communityId', // VK community IDs are negative
+        screenName,
         name,
         about,
         sinceTimestamp,
       );
-      print('Added group: $name');
+      print('Added group: Name: $name, id: $communityId, screen_nane: $screenName, sinceTS: $sinceTimestamp');
     }
 
     dbClient.close();

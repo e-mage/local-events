@@ -22,7 +22,8 @@ class DbClient {
       CREATE TABLE IF NOT EXISTS groups (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         community_id TEXT NOT NULL UNIQUE,
-        name TEXT NOT NULL,
+        screen_name TEXT NOT NULL,
+        name TEXT,
         about TEXT,
         since_timestamp INTEGER NOT NULL
       )
@@ -31,14 +32,15 @@ class DbClient {
 
   void initializeGroup(
     String communityId,
+    String screenName,
     String name,
     String about,
     int sinceTimestamp,
   ) {
     final stmt = _database.prepare(
-      'INSERT OR IGNORE INTO groups (community_id, name, about, since_timestamp) VALUES (?, ?, ?, ?)',
+      'INSERT OR IGNORE INTO groups (community_id, screen_name, name, about, since_timestamp) VALUES (?, ?, ?, ?, ?)',
     );
-    stmt.execute([communityId, name, about, sinceTimestamp]);
+    stmt.execute([communityId, screenName, name, about, sinceTimestamp]);
     stmt.dispose();
   }
 
@@ -49,6 +51,7 @@ class DbClient {
           (row) => {
             'id': row['id'],
             'community_id': row['community_id'],
+            'screen_name': row['screen_name'],
             'name': row['name'],
             'about': row['about'],
             'since_timestamp': row['since_timestamp'],

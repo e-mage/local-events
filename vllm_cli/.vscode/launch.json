@@ -1,0 +1,57 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "init_db.dart",
+            "type": "dart",
+            "request": "launch",
+            "program": "bin/init_db.dart",
+            "args": [
+                "--vk-token",
+                "<YOUR_VK_TOKEN>",
+                "--file",
+                "community-ids.txt"
+            ],
+            "cwd": "${workspaceFolder}/vllm_cli"
+        },
+        {
+            "name": "batch_process.dart",
+            "type": "dart",
+            "request": "launch",
+            "program": "bin/batch_process.dart",
+            "args": [
+                "--vk-token",
+                "<YOUR_VK_TOKEN>"
+            ],
+            "cwd": "${workspaceFolder}/vllm_cli"
+        },
+        {
+            "name": "vllm_cli.dart",
+            "type": "dart",
+            "request": "launch",
+            "program": "bin/vllm_cli.dart",
+            "args": [
+                "--image-url",
+                "<URL_TO_YOUR_IMAGE>",
+                "--prompt",
+                "Your text prompt here"
+            ],
+            "cwd": "${workspaceFolder}/vllm_cli"
+        },
+        {
+            "name": "vllm_cli_vk.dart",
+            "type": "dart",
+            "request": "launch",
+            "program": "bin/vllm_cli_vk.dart",
+            "args": [
+                "--vk-token",
+                "<YOUR_VK_TOKEN>",
+                "--community-id",
+                "<YOUR_COMMUNITY_ID>",
+                "--since-timestamp",
+                "<UNIX_TIMESTAMP>"
+            ],
+            "cwd": "${workspaceFolder}/vllm_cli"
+        }
+    ]
+}
