@@ -51,7 +51,7 @@ void main(List<String> arguments) async {
 
             final prompt =
                 'Является ли эта картинка анонсом предстоящего мероприятия? Если да, то выдай структурированную информацию с полями: 1) Кто (название артиста/коллектива), 2) Где, 3) Когда (Дата, Время), 4) Сколько стоит, 5) Где купить билеты, 6) Стоимость.';
-            final response = await vllmClient.generate(imageUrl, prompt);
+            final response = await vllmClient.generate([imageUrl], prompt);
             print('VLLM Response: $response');
             break; // Process only the first photo in a post
           }

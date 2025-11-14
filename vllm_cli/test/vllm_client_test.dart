@@ -22,7 +22,7 @@ void main() {
         ),
       );
 
-      final response = await vllmClient.generate('image_url', 'prompt');
+      final response = await vllmClient.generate(['image_url'], 'prompt');
 
       expect(response, 'Test response');
     });
@@ -36,7 +36,7 @@ void main() {
       ).thenAnswer((_) async => http.Response('Not Found', 404));
 
       expect(
-        () => vllmClient.generate('image_url', 'prompt'),
+        () => vllmClient.generate(['image_url'], 'prompt'),
         throwsA(isA<Exception>()),
       );
     });

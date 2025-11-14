@@ -17,9 +17,9 @@
             "program": "bin/init_db.dart",
             "args": [
                 "--vk-token",
-                "<YOUR_VK_TOKEN>",
+                "<VK_TOKEN>",
                 "--file",
-                "community-ids.txt"
+                "../../community-ids.txt"
             ],
             "cwd": "${workspaceFolder}/vllm_cli"
         },
@@ -30,7 +30,7 @@
             "program": "bin/batch_process.dart",
             "args": [
                 "--vk-token",
-                "<YOUR_VK_TOKEN>"
+                "<VK_TOKEN>"
             ],
             "cwd": "${workspaceFolder}/vllm_cli"
         }

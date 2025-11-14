@@ -16,7 +16,7 @@ class VkApiClient {
       'owner_id': communityId,
       'access_token': accessToken,
       'v': '5.199',
-      'filter': 'all',
+      'filter': 'owner',
       'count': '100',
     });
 

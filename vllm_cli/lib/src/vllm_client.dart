@@ -9,7 +9,7 @@ class VllmClient {
   final String endpoint;
   final http.Client _client;
 
-  Future<String> generate(String imageUrl, String prompt) async {
+  Future<String> generate(List<String> imageUrls, String prompt) async {
     final url = Uri.parse('$endpoint/v1/chat/completions');
     final headers = {'Content-Type': 'application/json'};
     final body = {
@@ -19,14 +19,14 @@ class VllmClient {
           'role': 'user',
           'content': [
             {'type': 'text', 'text': prompt},
-            {
+            for (var imageUrl in imageUrls) {
               'type': 'image_url',
               'image_url': {'url': imageUrl},
             },
           ],
         },
       ],
-      'max_tokens': 300,
+      'max_tokens': 1500,
     };
 
     try {
@@ -34,7 +34,7 @@ class VllmClient {
         url,
         headers: headers,
         body: json.encode(body),
-      );
+      ).timeout(Duration(seconds: 60));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);

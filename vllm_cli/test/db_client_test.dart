@@ -28,16 +28,17 @@ void main() {
     });
 
     test('should insert a new group', () async {
-      dbClient.initializeGroup('-123', 'Test Group', 'About Test', 1672531200);
+      dbClient.initializeGroup('-123', 'test_group', 'Test Group', 'About Test', 1672531200);
       final groups = dbClient.getAllGroups();
       expect(groups.length, 1);
       expect(groups.first['community_id'], '-123');
     });
 
     test('should ignore duplicate groups', () async {
-      dbClient.initializeGroup('-123', 'Test Group', 'About Test', 1672531200);
+      dbClient.initializeGroup('-123', 'test_group', 'Test Group', 'About Test', 1672531200);
       dbClient.initializeGroup(
         '-123',
+        'test_group',
         'Test Group 2',
         'About Test 2',
         1672531201,
@@ -48,14 +49,14 @@ void main() {
     });
 
     test('should get all groups', () async {
-      dbClient.initializeGroup('-1', 'G1', 'A1', 1);
-      dbClient.initializeGroup('-2', 'G2', 'A2', 2);
+      dbClient.initializeGroup('-1', 'g1', 'G1', 'A1', 1);
+      dbClient.initializeGroup('-2', 'g2', 'G2', 'A2', 2);
       final groups = dbClient.getAllGroups();
       expect(groups.length, 2);
     });
 
     test('should update a group timestamp', () async {
-      dbClient.initializeGroup('-123', 'Test Group', 'About Test', 1672531200);
+      dbClient.initializeGroup('-123', 'test_group', 'Test Group', 'About Test', 1672531200);
       var group = dbClient.getAllGroups().first;
       final newTimestamp = 1672531205;
       dbClient.updateGroupTimestamp(group['id'] as int, newTimestamp);
